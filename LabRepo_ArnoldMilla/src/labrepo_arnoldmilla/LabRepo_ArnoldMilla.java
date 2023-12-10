@@ -14,8 +14,8 @@ static Random rand = new Random();
                 switch(op){
                     case 1:{
                         char seguir = 's';                                                
-                        int hp;
-                        int energy;
+                        int hp = 0;
+                        int energy = 0;
                         System.out.println("------------------D&D------------------");
                         System.out.println("Elija el personaje que quiera ser \n Mago [M]    Caballero[C]");
                         char personaje = sc.next().charAt(0);
@@ -49,8 +49,17 @@ static Random rand = new Random();
                         while (seguir == 's' || seguir == 'S'){
                            int dado = rand.nextInt(1,17);
                             System.out.println("Usted saco: " + dado);
-                            tablero = movimiento(dado,tablero,personaje);
-                            imprimirT(tablero);
+                            ArrayList<Integer> datos= datos(dado,tablero,personaje);
+                            int buff = datos.get(0);
+                            if (buff == 5){
+                                energy = energy + buff;
+                            }
+                            else if(buff == 20){
+                                hp = hp + buff;
+                            }
+                            System.out.println("Puntos de vida: " + hp);
+                            System.out.println("Puntos de energia: " + energy);
+                            System.out.println("Ataque: 50");
                             System.out.println("Presione 's' para seguir adelante.... ");
                             seguir = sc.next().charAt(0);
                         }                     
@@ -115,32 +124,61 @@ static Random rand = new Random();
     }
     
     ////////////////////funcion para movimiento del personaje por la matriz
-    public static char[][] movimiento (int dado,char tablero[][], char personaje){
-        int dado1;
+    public static ArrayList<Integer> datos(int dado,char tablero[][], char personaje){
+        ArrayList<Integer> datos = new ArrayList<Integer>();
+        int dado1 = 0;
         int dado2 = 0;
         
+        ///calculo para los dados
         if (dado > 9){
             dado1 = dado - 9;
             dado2 = dado - dado1;
         }
         else{
-            dado1 = dado;
+            dado2 = dado;
         }
             
         
         for (int cont = 0; cont < 10; cont++) {
             for (int contador = 0; contador < 10; contador++) {
+                ///no se porque diablos siempre comienza desde 0 pero bueno
                 if (tablero [cont][contador] == personaje){
-                    tablero[cont][dado1] = personaje;
+                    tablero [cont][contador] = '-';
+                    //////////
+                   if (dado <= 9){
+                       if(tablero[cont][dado2] == '♥'){
+                           datos.add(20);  
+                        }
+                        else if(tablero[cont][dado2] == '▲'){
+                           datos.add(5);
+                      }//////////Agregar buff de mana y hp
+                  }
+                    tablero[cont][dado2] = personaje;
                     break;
                 }
             }
             if (dado > 9){
-                tablero [cont + 1][dado2] = personaje;
+                if(tablero[cont+1][dado1-1] == '♥'){
+                    datos.add(20);  
+                    }
+                else if(tablero[cont+1][dado1-1] == '▲'){
+                    datos.add(5);
+                }
+                //lo mismo acá, y por tal razon no puedo bajar del primer nivel 
+                //y como no encuentra una c o m en la primer fila luego no la reemplaza arriba
+                datos.add(cont + 1);
+                tablero[cont][dado2] = '-';
+                tablero[cont + 1][dado1 - 1] = '-';
+                tablero [cont + 1][dado1 - 1] = personaje; 
                 break;
-            }    
-        }        
-        return tablero;
+            }
+            else{
+                datos.add(cont + 1);
+                break;
+            }
+        }
+        imprimirT(tablero);
+        return datos;
     }
     
     //////////////////////funcion para crear el laberinto con for tambien se puede hacer como el que está arriba
